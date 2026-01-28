@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from app.database import init_db
 
 from app.routers import auth
+from app.routers import wallet
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -12,6 +13,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Kantor Walut API", lifespan=lifespan)
 
 app.include_router(auth.router)
+app.include_router(wallet.router)
 
 @app.get("/")
 async def root():

@@ -1,6 +1,7 @@
 from typing import Annotated
 from pydantic import BaseModel, EmailStr, field_validator, BeforeValidator
 import string
+from decimal import Decimal
 
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
@@ -42,7 +43,3 @@ class UserResponse(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
