@@ -1,0 +1,26 @@
+services:
+  api:
+    build: .
+    container_name: currency_exchange_app_API
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - MONGODB_URL=${MONGODB_URL}
+      - SECRET_KEY=${SECRET_KEY}
+    volumes:
+      - .:/app
+    depends_on:
+      - mongo_db
+
+  mongo_db:
+    image: mongo:6.0
+    container_name: currency_exchange_app_mongo_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:

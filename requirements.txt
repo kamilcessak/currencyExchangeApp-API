@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+motor
+beanie
+pydantic
+python-dotenv
+passlib
+bcrypt==4.0.1
+python-jose[cryptography]
+requests
+email-validator
