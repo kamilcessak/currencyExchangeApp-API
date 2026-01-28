@@ -1,6 +1,8 @@
-from pydantic import BaseModel, EmailStr, field_validator
-import re
+from typing import Annotated
+from pydantic import BaseModel, EmailStr, field_validator, BeforeValidator
 import string
+
+PyObjectId = Annotated[str, BeforeValidator(str)]
 
 class UserRegister(BaseModel):
     email: EmailStr
@@ -29,10 +31,18 @@ class UserRegister(BaseModel):
         return value
 
 class UserResponse(BaseModel):
-    id: str
+    id: PyObjectId
     email: EmailStr
     first_name: str
     last_name: str
 
     class Config:
         from_attributes = True
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
