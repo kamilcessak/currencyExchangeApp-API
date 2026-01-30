@@ -4,6 +4,7 @@ from beanie import init_beanie
 
 from app.models.user import User
 from app.models.token import TokenBlacklist
+from app.models.rate import Rate
 
 async def init_db():
     mongo_url = os.environ.get("MONGODB_URL")
@@ -14,6 +15,6 @@ async def init_db():
     client = AsyncIOMotorClient(mongo_url)
     db = client.get_default_database()
 
-    await init_beanie(database=db, document_models=[User, TokenBlacklist])
+    await init_beanie(database=db, document_models=[User, TokenBlacklist, Rate])
 
     print(f"Connected to database: {db.name}")
