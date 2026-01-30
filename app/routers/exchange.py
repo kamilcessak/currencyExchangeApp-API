@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from decimal import Decimal, ROUND_HALF_UP
 from app.models.user import User, Balance
 from app.models.rate import Rate
+from app.models.transaction import Transaction
 from app.schemas import ExchangeRequest, ExchangeResponse
 from app.utils.security import get_current_user
 
@@ -60,6 +61,15 @@ async def exchange_currency(
         current_user.balances.append(new_balance)
 
     await current_user.save()
+
+    await Transaction(
+        user_id=str(current_user.id),
+        sold_currency=data.from_currency,
+        sold_amount=amount_sold,
+        bought_currency=data.to_currency,
+        bought_amount=amount_bought,
+        rate=cross_rate
+    ).create()
 
     return{
         "message": "Currency exchanged successfully",

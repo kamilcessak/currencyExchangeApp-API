@@ -6,6 +6,7 @@ from app.routers import auth
 from app.routers import wallet
 from app.routers import rates
 from app.routers import exchange
+from app.routers import history
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -18,6 +19,7 @@ app.include_router(auth.router)
 app.include_router(wallet.router)
 app.include_router(rates.router)
 app.include_router(exchange.router)
+app.include_router(history.router)
 
 @app.get("/")
 async def root():
