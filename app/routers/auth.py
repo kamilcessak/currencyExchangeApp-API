@@ -7,7 +7,7 @@ from app.models.token import TokenBlacklist
 from app.models.user import User
 from app.models.password_reset import PasswordResetToken
 from app.schemas import (
-    UserRegister, UserResponse, Token, UserLogin,
+    UserRegister, UserResponse, Token, UserLogin, UserUpdate,
     ForgotPasswordRequest, ResetPasswordRequest,
 )
 from app.utils.security import get_password_hash, create_access_token, verify_password, get_current_user
@@ -77,6 +77,29 @@ async def login_user(user_data: UserLogin):
 
 @router.get("/me", response_model=UserResponse)
 async def user_data(current_user: User = Depends(get_current_user)):
+    return current_user
+
+@router.patch("/me", response_model=UserResponse)
+async def update_user(
+    data: UserUpdate,
+    current_user: User = Depends(get_current_user),
+):
+    update_data = data.model_dump(exclude_unset=True)
+    if not update_data:
+        return current_user
+
+    if "email" in update_data:
+        exists = await User.find_one(User.email == update_data["email"])
+        if exists and exists.id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Email is already taken",
+            )
+
+    for field, value in update_data.items():
+        setattr(current_user, field, value)
+    await current_user.save()
+
     return current_user
 
 @router.post("/logout", status_code=status.HTTP_200_OK)

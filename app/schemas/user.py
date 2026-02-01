@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Optional
 from pydantic import BaseModel, EmailStr, field_validator, BeforeValidator
 import string
 from decimal import Decimal
@@ -43,6 +43,19 @@ class UserResponse(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
+
+class UserUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+
+    @field_validator("email", "first_name", "last_name")
+    @classmethod
+    def validate_non_empty(cls, v):
+        if v is not None and isinstance(v, str) and not v.strip():
+            raise ValueError("Field cannot be empty")
+        return v
 
 
 class ForgotPasswordRequest(BaseModel):
