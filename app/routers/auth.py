@@ -1,10 +1,15 @@
+import secrets
 from fastapi import APIRouter, HTTPException, status, Depends
 from pymongo.errors import DuplicateKeyError
 from fastapi.security import OAuth2PasswordBearer
 
 from app.models.token import TokenBlacklist
 from app.models.user import User
-from app.schemas import UserRegister, UserResponse, Token, UserLogin
+from app.models.password_reset import PasswordResetToken
+from app.schemas import (
+    UserRegister, UserResponse, Token, UserLogin,
+    ForgotPasswordRequest, ResetPasswordRequest,
+)
 from app.utils.security import get_password_hash, create_access_token, verify_password, get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -83,4 +88,52 @@ async def logout_user(token: str = Depends(oauth2_scheme)):
 
     return {
         "message": "User logged out successfully"
+    }
+
+
+@router.post("/forgot-password", status_code=status.HTTP_200_OK)
+async def forgot_password(data: ForgotPasswordRequest):
+    user = await User.find_one(User.email == data.email)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User with this email does not exist",
+        )
+
+    await PasswordResetToken.find(PasswordResetToken.email == user.email).delete()
+
+    token = secrets.token_urlsafe(32)
+    await PasswordResetToken(token=token, email=user.email).create()
+
+    return {
+        "message": "Password reset token generated. Valid for 15 minutes.",
+        "reset_token": token,
+    }
+
+
+@router.post("/reset-password", status_code=status.HTTP_200_OK)
+async def reset_password(data: ResetPasswordRequest):
+    reset_record = await PasswordResetToken.find_one(PasswordResetToken.token == data.token)
+
+    if not reset_record:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token",
+        )
+
+    user = await User.find_one(User.email == reset_record.email)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    user.password_hash = get_password_hash(data.new_password)
+    await user.save()
+
+    await reset_record.delete()
+
+    return {
+        "message": "Password has been reset successfully",
     }

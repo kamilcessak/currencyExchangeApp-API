@@ -4,6 +4,7 @@ from beanie import init_beanie
 
 from app.models.user import User
 from app.models.token import TokenBlacklist
+from app.models.password_reset import PasswordResetToken
 from app.models.rate import Rate
 from app.models.transaction import Transaction
 
@@ -18,7 +19,7 @@ async def init_db():
 
     await init_beanie(
         database=db, 
-        document_models=[User, TokenBlacklist, Rate, Transaction]
+        document_models=[User, TokenBlacklist, PasswordResetToken, Rate, Transaction]
     )
 
     print(f"Connected to database: {db.name}")
